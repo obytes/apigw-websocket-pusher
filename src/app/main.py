@@ -90,14 +90,13 @@ class Pusher:
             )
             self.total_notified_connections += 1
         except ClientError as error:
-            if error.response['Error']['Code'] == "GoneException":
-                self.stale_connections.append({
-                    "user_id": user_id,
-                    "connection_id": connection_id
-                })
+            if error.response['Error']['Code'] == 'GoneException':
+                self.stale_connections.append(
+                    {'user_id': user_id, 'connection_id': connection_id}
+                )
+
             else:
                 print(error)
-                pass
 
     async def notify_user(self, table, apigw, user_id: str, data):
         """
@@ -111,9 +110,13 @@ class Pusher:
         connections = await self.retrieve_user_connections(table, user_id)
         # If user has active connections (Online), then notify.
         if len(connections):
-            notifications = []
-            for connection in connections:
-                notifications.append(self.notify_connection(apigw, user_id, connection["connection_id"], data))
+            notifications = [
+                self.notify_connection(
+                    apigw, user_id, connection["connection_id"], data
+                )
+                for connection in connections
+            ]
+
             await asyncio.wait(notifications)
 
     async def notify_selected_users(self, table, apigw, users_ids: Set[str], data):
@@ -124,9 +127,10 @@ class Pusher:
         :param users_ids: List of users' ids
         :param data: binary data to send to all users
         """
-        notifications = []
-        for user_id in users_ids:
-            notifications.append(self.notify_user(table, apigw, user_id, data))
+        notifications = [
+            self.notify_user(table, apigw, user_id, data) for user_id in users_ids
+        ]
+
         await asyncio.wait(notifications)
 
     async def notify_all_users(self, table, apigw, exclude_users_ids: List[str], data):
@@ -139,11 +143,13 @@ class Pusher:
         """
         connections = await self.retrieve_all_users_connections(table, exclude_users_ids)
         if len(connections):
-            notifications = []
-            for connection in connections:
-                notifications.append(
-                    self.notify_connection(apigw, connection["user_id"], connection["connection_id"], data)
+            notifications = [
+                self.notify_connection(
+                    apigw, connection["user_id"], connection["connection_id"], data
                 )
+                for connection in connections
+            ]
+
             await asyncio.wait(notifications)
 
     async def delete_all_stale_connections(self, table):
