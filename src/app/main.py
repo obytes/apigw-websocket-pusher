@@ -90,14 +90,13 @@ class Pusher:
             )
             self.total_notified_connections += 1
         except ClientError as error:
-            if error.response['Error']['Code'] == "GoneException":
-                self.stale_connections.append({
-                    "user_id": user_id,
-                    "connection_id": connection_id
-                })
+            if error.response['Error']['Code'] == 'GoneException':
+                self.stale_connections.append(
+                    {'user_id': user_id, 'connection_id': connection_id}
+                )
+
             else:
                 print(error)
-                pass
 
     async def notify_user(self, table, apigw, user_id: str, data):
         """
