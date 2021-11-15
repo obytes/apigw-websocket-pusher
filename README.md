@@ -6,6 +6,9 @@ Fast AWS API Gateway websockets notifications' pusher using Python AsyncIO for m
 non-blocking IO calls to DynamoDB connections store and API Gateway management API. making it suitable for broadcasting
 messages to multiple users with a fast and cost-effective approach.
 
+You can test the Pusher with [this demo application](https://github.com/obytes/apigw-websocket-pusher) or use the live 
+demo at https://sumu.kodhive.com
+
 ## Features
 
 - **Multiple sources**: capable of receiving notification requests from SQS and SNS, which make it suitable for
