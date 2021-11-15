@@ -137,8 +137,6 @@ boto3.client("sns").sns.publish(
 
 ### Sending notification requests through SQS
 
-The Pusher can poll notifications from SQS queue,
-
 Unlike SNS, when sending notifications to SQS queue, the Pusher Lambda Function event source can be configured to poll
 notification requests from the SQS Queue, and it will periodically poll notification requests from the Queue using
 Polling Technique.
