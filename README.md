@@ -143,13 +143,31 @@ Polling Technique.
 
 This will result in notifications requests to be processed in batches, which comes with many benefits:
 
-- Fewer lambda function executions, to not reach the Lambda Concurrent Execution Limit.
-- As the pusher uses AsyncIO, it will be able to process batches of SQS Records concurrently.
-- Low cost thanks to SQS batches and fewer Lambda Executions.
+- **Fewer Lambda Invocations** - to not reach the Lambda Concurrency Limit.
+- **Concurrent Notifications** - as the pusher uses **`AsyncIO`**, it will be able to process batches of SQS Records
+  concurrently.
+- **Low cost** - thanks to SQS Batches and fewer Lambda Invocations.
 
-You can meet the same speed and performance of SNS if you set the SQS queue `receive_wait_time_seconds` to 0. this will
-make the Lambda Function do Short Polling instead of Long Polling. and it will receive the notifications requests
-immediately after being visible on SQS queue.
+Pusher can meet the same speed and performance of SNS if the SQS queue **`receive_wait_time_seconds`** is set to 20.
+this will make the Lambda Service do **`Long Polling`** instead of **`Short Polling`**. In addition to that, Lambda
+service will have a background worker that has five instances polling every 20 seconds, this will ensure that the lambda
+will receive the notifications requests as soon as they arrive in the queue.
+
+
+> **`AWS`**: the automatic scaling behavior of Lambda is designed to keep polling costs low when a queue is empty while
+> simultaneously letting us scale up to high throughput when the queue is being used heavily. When an SQS event source
+> mapping is initially created and enabled, or when messages first appear after a period with no traffic, then the
+> Lambda service will begin polling the SQS queue using five parallel long-polling connections. The Lambda service
+> monitors the number of inflight messages, and when it detects that this number is trending up, it will increase the
+> polling frequency by 20 ReceiveMessage requests per minute and the function concurrency by 60 calls per minute.
+> As long as the queue remains busy it will continue to scale until it hits the function concurrency limits.
+
+
+5 parallel connections, each will send 3 ReceiveMessage requests per minute which is 15 messages every minute. so 900
+every  hour, 21600 every day and 648,000 every month.
+
+AWS gives you one million messages for free every month. After that it’s only $0.40 per million messages, so the cost
+is very low for consuming messages from SQS.
 
 > Send to SQS when you have a large application with millions of users
 
